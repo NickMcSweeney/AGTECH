@@ -2,7 +2,7 @@
 bridging application to connect the harvest vehicle robots with the robotics operating system.
 
 ### Documentation
-see (wiki)[https://github.com/NickMcSweeney/hv-ros-bridge/wiki] for full documentation.
+see [wiki](https://github.com/NickMcSweeney/hv-ros-bridge/wiki) for full documentation.
 
 ### Open Source
 this is being developed with Orebro University and is for academic use.
