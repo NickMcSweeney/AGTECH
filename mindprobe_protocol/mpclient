@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+from mpclient import *
+import code
+import sys
+
+if len(sys.argv) == 3:
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+elif len(sys.argv) == 2:
+    host = sys.argv[1]
+    port = 4400
+elif len(sys.argv) == 1:
+    host = "localhost"
+    port = 4400
+else:
+    print "usage: %s [host [port]]"
+
+print host, port
+
+connect(host, port)
+
+code.interact("", local=globals())
+
