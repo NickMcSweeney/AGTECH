@@ -9,3 +9,21 @@ this is being developed with Orebro University and is for academic use.
 
 ### Harvest AI
 this is for harvest vehicle robots, property of a private company and therefore some of the resources being used for development are not publically available.
+
+### Project Structure
+```
+controllers: cpp nodes to send data to the robots
+	|--- drive
+	|--- gripper_arm
+sensors: cpp nodes to get data from the robots
+	|--- 
+	|---
+services: python ROS services to control the mindprobe client
+	|---
+hai_launch: ROS launch files
+	|---
+tests: unit tests for the ros nodes
+	|--- controllers
+	|--- sensors
+	|--- services
+```
