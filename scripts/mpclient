@@ -20,5 +20,22 @@ print host, port
 
 connect(host, port)
 
+enable_probes((1125,1077,1080,1206,1207))
+time.sleep(0.3)
+start_probes()
+time.sleep(0.3)
+write_probe(1125,1)
+time.sleep(0.5)
+for i in range(0, 100, 5):
+    n = float(i) / 100.0
+    print n
+    write_probes([(1206,n),(1207,-n)])
+    time.sleep(0.1)
+for i in range(0, 100, 2):
+    n = float(i) / 100.0
+    print n
+    write_probes([(1206,n),(1207,n)])
+    time.sleep(0.1)
+
 code.interact("", local=globals())
 

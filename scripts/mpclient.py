@@ -74,10 +74,13 @@ def connect(host, port = 4400):
     # Query the tick rate:
     send_message(make_tlv(MP_TLV_HZ))
     (t, l, v) = get_next_message()
+    while(t != MP_TLV_HZ):
+        time.sleep(0.1)
+        (t, l, v) = get_next_message()
     if (t != MP_TLV_HZ) or (l != 2):
         raise RuntimeError('unexpected message t=%d l=%d' % (t, l))
     hz = struct.unpack("<H", v)[0]
-    
+   
     # Discover the probes:
     discover_probes()
 

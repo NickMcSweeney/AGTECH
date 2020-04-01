@@ -12,18 +12,18 @@ this is for harvest vehicle robots, property of a private company and therefore 
 
 ### Project Structure
 ```
-controllers: cpp nodes to send data to the robots
-	|--- drive
-	|--- gripper_arm
-sensors: cpp nodes to get data from the robots
+*controllers*: nodes to send data to the robots
+	|--- *drive*
+	|--- *gripper_arm*
+*sensors*: nodes to get data from the robots
 	|--- 
 	|---
-services: python ROS services to control the mindprobe client
+*services*: ROS services to control the mindprobe client
 	|---
-hai_launch: ROS launch files
+*hai_launch*: ROS launch files
 	|---
-tests: unit tests for the ros nodes
-	|--- controllers
-	|--- sensors
-	|--- services
+*tests*: unit tests for the ros nodes
+	|--- *controllers*
+	|--- *sensors*
+	|--- *services*
 ```
