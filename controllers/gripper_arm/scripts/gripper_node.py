@@ -14,9 +14,14 @@ host_name = "HAI-1095"
 
 class Controller(Setter):
     def init(self):
-        Setter.init(0000)
+        Setter.init(self,1080)
     def callback(self, cmd_msg):
-        Setter.callback(cmd_msg.data)
+        pos = cmd_msg.data
+        if(pos > 100):
+            pos = 100
+        elif(pos < 0):
+            pos = 0
+        Setter.callback(self,pos)
 
 # main fn
 if __name__ == '__main__':
@@ -25,7 +30,7 @@ if __name__ == '__main__':
         rospy.init_node("arm_node", anonymous=True)
 
         controller = Controller(host_name, 4400)
-
+        controller.init()
         rospy.Subscriber('/'+resource_name(host_name)+'/set_gripper_pos', Float64, controller.callback)
         
         # Start the ROS main loop

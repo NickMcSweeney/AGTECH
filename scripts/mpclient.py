@@ -13,6 +13,7 @@ import time
 import os
 import sys
 import subprocess
+import resources
 
 MP_TLV_NULL                  = 0
 MP_TLV_CONNECTED             = 1
@@ -75,6 +76,7 @@ def connect(host, port = 4400):
     send_message(make_tlv(MP_TLV_HZ))
     (t, l, v) = get_next_message()
     while(t != MP_TLV_HZ):
+        print("message id {}").format(t)
         time.sleep(0.1)
         (t, l, v) = get_next_message()
     if (t != MP_TLV_HZ) or (l != 2):
