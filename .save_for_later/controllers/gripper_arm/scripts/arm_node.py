@@ -28,7 +28,7 @@ if __name__ == '__main__':
         # Init the connection with the ROS system
         rospy.init_node("arm_node", anonymous=True)
 
-        controller = Controller(host_name, 4400)
+        controller = Controller()
         controller.init()
 
         rospy.Subscriber('/'+resource_name(host_name)+'/set_arm_pos', Float64, controller.callback)

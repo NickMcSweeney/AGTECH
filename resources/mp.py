@@ -9,6 +9,28 @@ import os
 import sys
 import subprocess
 
+### --------- ###
+#
+### Mindprobe ###
+# 
+# This is an adaptation of the mindprobe scripts as a class
+# this adaptation was done to be able to better handle data 
+# and operate in a persistent state as part of the ros structure
+#
+# Due to the synchonus connection stream, data is transmitted in 
+# a single pipe, utilizing a tcp socket connection. because of this 
+# there can only be one Mindprobe connection made to the device.
+#
+# Note: there may be a potential to expand this to have multiple
+# connections by using multiple ports. however I do not know which ports support
+# a MP connection. currently only 4400 is known to be able to transmit data. 
+#
+### -------- ###
+
+
+###
+# Type names for probe types (t in tlv)
+###
 MP_TLV_NULL                  = 0
 MP_TLV_CONNECTED             = 1
 MP_TLV_DISCONNECTED          = 2
@@ -27,6 +49,13 @@ MP_TLV_MESSAGE_TEXT          = 14
 MP_TLV_MISSED_DEBUG_MESSAGES = 15
 MP_TLV_WRITE_PROBES          = 16
 
+###
+# functions that handle the formatting, reading and witing of tlv messages
+# tlv is the structure of message that mp uses to communicate
+# t = type
+# l = length
+# v = value
+###
 def make_tlv_uint8(t, v):
     return struct.pack("<HHH", t, 1, v)
 
@@ -60,33 +89,14 @@ def tlv_to_text(data):
             string += ':'
     return string
 
-class listen(threading.Thread):
-    def __init__ (self, q):
-        threading.Thread.__init__(self)
-        self.q = q
-        self.setDaemon(True)
-    def run(self):
-        global s, listener_pipe
-        while True:
-            # Wait for incoming data from the RCP or for the listener
-            # pipe to close, indicating that we are 
-            (r, w, x) = select.select((s, listener_pipe[0]), (), ())
-            if listener_pipe[0] in r:
-                # listener pipe signaled the thread to exit
-                os.close(listener_pipe[0])
-                return
-            if s in r:
-                (t, l, v) = receive_next_message()
-                if not do_async_message(t, l, v):
-                    self.q.put((t, l, v))
-                # time.sleep(0.1)
 
 class Mindprobe():
-    
-    # Type names for probe type enumerations, and pack/unpack directives:
-    
-    
+    # Mindprobe class
+    # each mindproble class represents a connection to a HAI bot
+    # there can only be one connection, and therefore one mp class per port
+    # the default port is 4400. (other working ports are unknown)
     def __init__ (self):
+        # constructor for the mindprobe instatnce
         self.capture_buffer = ()
         self.type_table = {
             1:  ('uint8',   '<B'), # 1-byte unsigned integer
@@ -105,12 +115,16 @@ class Mindprobe():
         }
 
     def init(self, host):
-        self.connect(host)
-        self.enable_probes(1125)
+        # initialize the mp connection
+        self.connect(host) # sets up the connection
+        self.enable_probes(1125) # enables the virtual start probe
         self.start_probes()
-        self.write_probe(1125,1)
+        self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
     
     def connect(self, host, port = 4400):
+        # Makes a connection to the robot.
+        # performs an initialization handshake to get version, tick rate and probes
+        # starts the listener subclass instance to handle recieving msgs
     
         self.capture_buffer_lock = threading.Semaphore()
     
@@ -146,10 +160,17 @@ class Mindprobe():
             (self.version, self.hz, len(self.probe_defs.keys()))
     
     def disconnect(self):
-        stop_listener()
+        # end the connection
+        self.stop_listener()
         self.s.close()
     
     def discover_probes(self):
+        # gets all the available probes
+        # probes are used to either get information or set values in the robot
+
+        # TODO: this function needs to be updated (potentially) as the number of probes exceed a single msg
+        # this means that the discover probes function deest to be able to add 3 msgs worth of probes
+        # into the probes dictionary. otherwise only 1/3 of the probes can be accessed at any time.
         new_probe_defs = {}  # dictionary of id: (name, type)
         new_probe_names = {} # dictionary of name: id
         
@@ -184,6 +205,7 @@ class Mindprobe():
         return
     
     def show_probes(self):
+        # print out the probes
         for id in self.probe_defs.keys():
             (name, type, length) = self.probe_defs[id]
             type_name = self.type_table[type][0]
@@ -191,11 +213,15 @@ class Mindprobe():
     
     
     def send_message(self, message):
+        # Call to send a msg
+
         # print "sending: ",
         # print struct.unpack("%dB" % len(message), message)
         self.s.send(message)
     
     def lookup_probe_id(self, probe):
+        # get the information about a probe by passing either the integer code for the probe
+        # or the string name of the probe
         if type(probe) == str:
             if not probe in self.probe_names:
                 raise ValueError('unknown probe %s' % probe)
@@ -208,6 +234,8 @@ class Mindprobe():
         return probe_id
     
     def enable_probes(self, probes):
+        # enables one or more probes.
+
         # allow for singleton argument
         if type(probes) != tuple:
             probes = (probes),
@@ -218,14 +246,17 @@ class Mindprobe():
         self.send_message(make_tlv(MP_TLV_ENABLE_PROBES, v))
     
     def start_probes(self):
+        # start capturing information from a probe
         self.capturing = True
         self.send_message(make_tlv(MP_TLV_START_PROBES))
     
     def stop_probes(self):
+        # stop capturing information from a probe
         self.send_message(make_tlv(MP_TLV_STOP_PROBES))
         self.capturing = False
     
     def do_debug_message(self, message):
+        # handles debug msgs
         (t, l, v, message) = next_tlv(message)
         if t != MP_TLV_CURRENT_TICK:
             raise RuntimeError('unexpected type = %d' % t)
@@ -239,6 +270,7 @@ class Mindprobe():
         print("Debug message (t = %d): %s" % (tick, message_text))
         
     def do_async_message(self, t, l, v):
+        # async msg handler
         if t == MP_TLV_PROBE_DATA:
             self.capture_data(v)
             return True
@@ -254,10 +286,10 @@ class Mindprobe():
         else:
             return False  # not an asynchronous message
     
-    # Receive one message from the socket:
     def receive_next_message(self):
+        # Receive one message from the socket:
         while ((len(self.recvbuf) < 4) or (len(self.recvbuf) < tlv_len(self.recvbuf))):
-            self.recvbuf += s.recv(65536)
+            self.recvbuf += self.s.recv(65536)
             # print "recvbuf is: ",
             # print struct.unpack("%dB" % len(recvbuf), recvbuf)
     
@@ -266,17 +298,21 @@ class Mindprobe():
         return (t, l, v)
     
     def get_next_message(self):
+        # gets the next msg from the queue
         (t, l, v) = self.listener_q.get()
         return (t, l, v)
     
     
     def capture_buffer_len(self):
+        # length of capture buffer
         self.capture_buffer_lock.acquire()
         l = len(self.capture_buffer)
         self.capture_buffer_lock.release()
         return l
     
     def capture(self, t):
+        # get data from the bot over an interval t
+        # add it to the capture_buffer
         n = int(round(t * self.hz))
     
         self.capture_buffer_lock.acquire()
@@ -294,7 +330,50 @@ class Mindprobe():
             self.capture_buffer += (data, )
             self.capture_buffer_lock.release()
     
+    def return_capture(self, interval = None):
+        # get data from the capture buffer and print it to console
+    
+        if interval == None:
+            interval = 1.0 / self.hz
+    
+        step = int(round(self.hz * interval))
+
+        captured_data_array = []
+    
+        self.capture_buffer_lock.acquire()
+        for i in range(0, len(self.capture_buffer), step):
+            item = self.capture_buffer[i]
+    
+            if len(item) == 0:
+                print "empty capture buffer item"
+                continue
+    
+            (t, l, v, item) = next_tlv(item)
+            if t != MP_TLV_CURRENT_TICK:
+                print "bad capture item, first element not tick"
+                continue
+    
+            (val, ) = struct.unpack('<I', v)
+            print 'tick =', val,
+            
+            captured_data_obj = {}
+            while len(item):
+                (t, l, v, item) = next_tlv(item)
+    
+                name = self.probe_defs[t][0]
+                type = self.probe_defs[t][1]
+                val = self.decode_probe_data(type, v)
+
+                captured_data_obj[name] = val
+
+                print name, '=', val,
+            print ""
+            captured_data_array.append(captured_data_obj)
+        self.capture_buffer_lock.release()
+        return captured_data_array
+
     def show_capture(self, interval = None):
+        # get data from the capture buffer and print it to console
     
         if interval == None:
             interval = 1.0 / self.hz
@@ -329,6 +408,7 @@ class Mindprobe():
         self.capture_buffer_lock.release()
     
     def write_probe(self, probe, value):
+        # write a vale to a probe
         probe_id = self.lookup_probe_id(probe)
         probe_type = self.probe_defs[probe_id][1]
     
@@ -336,6 +416,7 @@ class Mindprobe():
         self.send_message(make_tlv(MP_TLV_WRITE_PROBES, v))
     
     def write_probes(self, probevals):
+        # write a set of values to a set of probes
         v = ''
     
         for (probe, value) in probevals:
@@ -346,6 +427,7 @@ class Mindprobe():
         self.send_message(make_tlv(MP_TLV_WRITE_PROBES, v))
     
     def encode_probe_value(self, probe_type, value):
+        # encode as tlv msg
         if self.type_table[probe_type][0] == 'tlv':
             return value  # assume it's already encoded.
         elif self.type_table[probe_type][0] == 'string':
@@ -354,6 +436,7 @@ class Mindprobe():
             return struct.pack(self.type_table[probe_type][1], value)
     
     def decode_probe_data(self, probe_type, data):
+        # decode tlv msg
         if self.type_table[probe_type][0] == 'tlv':
             return tlv_to_text(data)
         elif self.type_table[probe_type][0] == 'string':
@@ -371,16 +454,40 @@ class Mindprobe():
                                            stdout=subprocess.PIPE).communicate()[0]
         self.write_probe('rcp_script', compiled_script)
     
+    class listen(threading.Thread):
+        # listener subclass for getting data from robot
+        def __init__ (self, q, mp):
+            threading.Thread.__init__(self)
+            self.q = q
+            self.mp = mp
+            self.setDaemon(True)
+        def run(self):
+            # runs a listener thread, reading in data and placing it in a queue
+            while True:
+                # Wait for incoming data from the RCP or for the listener
+                # pipe to close, indicating that we are 
+                (r, w, x) = select.select((self.mp.s, self.mp.listener_pipe[0]), (), ())
+                if self.mp.listener_pipe[0] in r:
+                    # listener pipe signaled the thread to exit
+                    os.close(self.mp.listener_pipe[0])
+                    return
+                if self.mp.s in r:
+                    (t, l, v) = self.mp.receive_next_message()
+                    if not self.mp.do_async_message(t, l, v):
+                        self.q.put((t, l, v))
+                    # time.sleep(0.1)
     
     def start_listener(self):
+        # start listener conenction
         self.listener_pipe = os.pipe()
     
         self.listener_q = Queue.Queue()
     
-        self.listener = listen(self.listener_q)
+        self.listener = self.listen(self.listener_q, self)
         self.listener.start()
     
     def stop_listener(self):
+        # close listener connection
         os.write(self.listener_pipe[1], 'bye')
         os.close(self.listener_pipe[1])
         self.listener.join()

@@ -12,6 +12,7 @@ from setter import Setter
 from utils import *
 
 # Global variables
+host_name = "hai-1095.local"
 
 class Controller(Setter):
     def init(self):
