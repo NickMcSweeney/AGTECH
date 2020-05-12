@@ -331,7 +331,7 @@ class Mindprobe():
             self.capture_buffer_lock.release()
     
     def return_capture(self, interval = None):
-        # get data from the capture buffer and print it to console
+        # get data from the capture buffer and return it 
     
         if interval == None:
             interval = 1.0 / self.hz
