@@ -98,6 +98,8 @@ class Mindprobe():
     def __init__ (self):
         # constructor for the mindprobe instatnce
         self.capture_buffer = ()
+        self.probe_names = {}
+        self.probe_defs = {}
         self.type_table = {
             1:  ('uint8',   '<B'), # 1-byte unsigned integer
             2:  ('int8',    '<b'), # 1-byte signed integer
@@ -152,9 +154,11 @@ class Mindprobe():
             raise RuntimeError('unexpected message t=%d l=%d' % (t, l))
         self.hz = struct.unpack("<H", v)[0]
         
-       
         # Discover the probes:
-        self.discover_probes()
+        time.sleep(0.5)
+        while(len(self.probe_defs.keys()) < 3900):
+            self.discover_probes()
+            time.sleep(0.1)
     
         print "Protocol version = 0x%04x, sample rate is %d Hz, %d probes" % \
             (self.version, self.hz, len(self.probe_defs.keys()))
@@ -168,12 +172,6 @@ class Mindprobe():
         # gets all the available probes
         # probes are used to either get information or set values in the robot
 
-        # TODO: this function needs to be updated (potentially) as the number of probes exceed a single msg
-        # this means that the discover probes function deest to be able to add 3 msgs worth of probes
-        # into the probes dictionary. otherwise only 1/3 of the probes can be accessed at any time.
-        new_probe_defs = {}  # dictionary of id: (name, type)
-        new_probe_names = {} # dictionary of name: id
-        
         self.send_message(make_tlv(MP_TLV_DISCOVER_PROBES))
         while True:
             (t, l, def_items) = self.get_next_message()
@@ -190,14 +188,12 @@ class Mindprobe():
                 # Name has null terminator, which Python doesn't need.
                 probe_name = v[6:len(v)-1]
                 
-                new_probe_names[probe_name] = probe_id
-                new_probe_defs[probe_id] = (probe_name, probe_type, probe_length)
+                self.probe_names[probe_name] = probe_id
+                self.probe_defs[probe_id] = (probe_name, probe_type, probe_length)
                 pass
             
             if (len(def_items) == 0 or
                 self.version < 0x0104):
-                self.probe_defs = new_probe_defs
-                self.probe_names = new_probe_names
                 break
             
             pass
@@ -354,7 +350,7 @@ class Mindprobe():
                 continue
     
             (val, ) = struct.unpack('<I', v)
-            print 'tick =', val,
+            # print 'tick =', val,
             
             captured_data_obj = {}
             while len(item):
@@ -366,8 +362,8 @@ class Mindprobe():
 
                 captured_data_obj[name] = val
 
-                print name, '=', val,
-            print ""
+                # print name, '=', val,
+            # print ""
             captured_data_array.append(captured_data_obj)
         self.capture_buffer_lock.release()
         return captured_data_array
@@ -396,8 +392,12 @@ class Mindprobe():
             (val, ) = struct.unpack('<I', v)
             print 'tick =', val,
     
+            print("Probes: ", len(self.probe_defs))
             while len(item):
                 (t, l, v, item) = next_tlv(item)
+                
+                if (self.probe_defs[t] == None):
+                    pass
     
                 name = self.probe_defs[t][0]
                 type = self.probe_defs[t][1]

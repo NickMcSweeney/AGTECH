@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import mp
-import asyncio
 
 class Getter: # parent class for setting values
     def __init__(self, name, codes, mp): 
@@ -10,10 +9,11 @@ class Getter: # parent class for setting values
         self.codes = codes
         self.name = name
 
-    def init(self): 
-        # initialize client connection
-        self.mp.enable_probes(self.code)
+    ### TODO: because this is single connection based, probes need to be enabled together, otherwise only the last enabled probe will do be captured in data capture
+    # def init(self): 
+        # # initialize client connection
+        # self.mp.enable_probes(self.codes)
 
     def run(self, data):
         ## Publish data
-        self.pub(data)
+        self.pub.publish(data)

@@ -6,14 +6,14 @@ SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))
 sys.path.append(SCRIPTS_PATH)
 from getter import Getter
 
-class IrCamera(Getter):
+class Odometer(Getter):
     ###
-    # IR sensor class extending the getter, for handling the publishing of data 
+    # Odometer class extending the getter, for handling the publishing of data 
     ###
 
     def init(self, ros, hostname): 
         # create publisher
-        self.pub = ros.Publisher('/'+hostname+'/ir/'+self.name, Float64,queue_size=1)
+        self.pub = ros.Publisher('/'+hostname+'/odom/'+self.name, Float64,queue_size=1)
         # pass to parent to enble probes
         # Getter.init(self)
 
