@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>services</name>
+  <name>hv_services</name>
   <version>0.0.0</version>
   <description>The services package</description>
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from std_msgs.msg import Float64
+from std_msgs.msg import Int16MultiArray
 import ros
 import sys, os
 SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))
@@ -12,7 +13,7 @@ class LidarCamera(Getter):
     ###
     def init(self, ros, hostname): 
         # create publisher
-        self.pub = ros.Publisher('/'+hostname+'/lidar/'+self.name,Float64,queue_size=1)
+        self.pub = ros.Publisher('/'+hostname+'/lidar/'+self.name,Int16MultiArray,queue_size=1)
         # pass to parent to enble probes
         self.mp.write_probe(self.codes,1)
         # Getter.init(self)
@@ -22,10 +23,15 @@ class LidarCamera(Getter):
         # get data from queue
         data = q[self.name]
         
-        # TODO: format data for publisher
+        strarr = data.split(':')
+        intarr = []
+        for elem in strarr:
+            intarr.append(int(elem,16))
         
+        dataout = Int16MultiArray()
+        dataout.data = intarr
         # publish data
-        Getter.run(self, data)
+        Getter.run(self, dataout)
 
     # enable_probes((3275, 2876,2868,2867,2866,2930))
     # enabling 3275 will collect data from laser sensor

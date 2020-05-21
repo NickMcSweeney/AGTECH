@@ -1,4 +1,4 @@
-# HV-ROS Bridge
+# AGTECH
 bridging application to connect the harvest vehicle robots with the robotics operating system.
 
 ### Documentation

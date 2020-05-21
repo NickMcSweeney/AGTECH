@@ -7,7 +7,7 @@ sys.path.append(SCRIPTS_PATH)
 
 from ir import IrCamera
 from lidar import LidarCamera, LidarCameraNearestObstacle
-from odometery import Odometer
+from odometry import Odometer
 
 class SensorHub():
     ###
