@@ -9,6 +9,7 @@ project(hv_bridge)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
+  nav_msgs
   rospy
   std_msgs
   tf

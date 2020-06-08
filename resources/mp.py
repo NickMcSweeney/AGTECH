@@ -115,13 +115,18 @@ class Mindprobe():
             12: ('bool',   '<B'),  # 1-byte boolean integer (1 or 0)
             13: ('string', ''),    # variable-size null-terminated char string
         }
-
+        self.probe_list = [] 
+        
     def init(self, host):
         # initialize the mp connection
         self.connect(host) # sets up the connection
+
+    def start(self):
         self.enable_probes(1125) # enables the virtual start probe
-        self.start_probes()
         self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
+        time.sleep(2)
+        self.init_probes() # enable all the queued probes
+
     
     def connect(self, host, port = 4400):
         # Makes a connection to the robot.
@@ -206,6 +211,15 @@ class Mindprobe():
             (name, type, length) = self.probe_defs[id]
             type_name = self.type_table[type][0]
             print "probe id %d: %s type %s length %d" % (id, name, type_name, length)
+
+    def return_probes(self):
+        # return the list of probes
+        probe_code_list = [] 
+        for id in self.probe_defs.keys():
+            (name, type, length) = self.probe_defs[id]
+            type_name = self.type_table[type][0]
+            probe_code_list.append(name)
+        return probe_code_list
     
     
     def send_message(self, message):
@@ -241,6 +255,19 @@ class Mindprobe():
             v += struct.pack("<H", probe_id)
         self.send_message(make_tlv(MP_TLV_ENABLE_PROBES, v))
     
+    def include_probes(self, probes):
+        # adds a probe code or collection of probe codes to the collection of probes
+        if type(probes) != tuple:
+            probes = (probes),
+        for probe in probes:
+            if (probe not in self.probe_list):
+                self.probe_list.append(probe)
+
+    def init_probes(self):
+        # enables all the probes on the start list
+        self.enable_probes(tuple(self.probe_list))
+        self.probe_list = []
+
     def start_probes(self):
         # start capturing information from a probe
         self.capturing = True

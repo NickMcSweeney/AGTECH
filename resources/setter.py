@@ -10,7 +10,7 @@ class Setter: # parent class for setting values
     def init(self, code): 
         self.code = code
         # initialize client connection
-        self.mp.enable_probes(self.code)
+        self.mp.include_probes(self.code)
 
     def callback(self, msg): 
         # subscriber callback function

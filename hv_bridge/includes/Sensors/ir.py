@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 import ros
 import sys, os
 SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))
 sys.path.append(SCRIPTS_PATH)
 from getter import Getter
+from utils import resource_name
 
 class IrCamera(Getter):
     ###
@@ -12,18 +13,26 @@ class IrCamera(Getter):
     ###
 
     def init(self, ros, hostname): 
+        self.hostname = hostname
         # create publisher
-        self.pub = ros.Publisher('/'+hostname+'/ir/'+self.name, Float64,queue_size=1)
+        if type(self.name) != tuple:
+            self.pub = ros.Publisher('/'+hostname+'/ir/'+resource_name(self.name),Float32 ,queue_size=1)
+        else:
+            self.pub = ros.Publisher('/'+hostname+'/ir/'+resource_name(os.path.commonprefix(self.name)),Float32,queue_size=1)
         # pass to parent to enble probes
-        # Getter.init(self)
+        Getter.init(self)
 
-    def run(self, q):
+    def run(self, q, current_time):
         ## handles the publishing of data, should be run at an acceptable update interval
         # get data from queue
-        data = q[self.name]
-        
-        # TODO: format data for publisher
-        
+        data = []
+        labels = self.name
+        if type(labels) != tuple:
+            labels = (labels)
+
+        for label in labels:
+            data.append(q[label])
+
         # publish data
-        Getter.run(self,data)
+        Getter.run(self,data[0])
     

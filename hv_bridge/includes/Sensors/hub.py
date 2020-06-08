@@ -25,10 +25,15 @@ class SensorHub():
                 "bound.leftFront.signalB":0,
                 "bound.rightRear.signalB":0,
                 "bound.leftRear.signalB":0,
-                "Raw":0,
+                "vis.sick.localScanData":0,
                 "vis.forwardObstacleDist":0,
                 "vis.forwardObstacle.x":0,
-                "vis.forwardObstacle.y":0
+                "vis.forwardObstacle.y":0,
+                "loc.rawOdometry.x":0,
+                "loc.rawOdometry.y":0,
+                "loc.rawOdometry.h":0,
+                "loc.actual.x":0,
+                "loc.actual.y":0
         }
         # initialize the ir cameras to colect signals
         # codes are for signalA, signalB
@@ -41,14 +46,19 @@ class SensorHub():
         # probe id 1614: bound.leftRear.signalB type float length 4
         # probe id 1662: bound.rightRear.signalA type float length 4
         # probe id 1663: bound.rightRear.signalB type float length 4
-        self.rightFrontA = IrCamera("bound.rightFront.signalA",1513,self.mp)
-        self.leftFrontA = IrCamera("bound.leftFront.signalA",1563,self.mp)
-        self.rightBackA = IrCamera("bound.rightRear.signalA",1613,self.mp)
-        self.leftBackA = IrCamera("bound.leftRear.signalA",1662,self.mp)
-        self.rightFrontB = IrCamera("bound.rightFront.signalB",1514,self.mp)
-        self.leftFrontB = IrCamera("bound.leftFront.signalB",1564,self.mp)
-        self.rightBackB = IrCamera("bound.rightRear.signalB",1614,self.mp)
-        self.leftBackB = IrCamera("bound.leftRear.signalB",1663,self.mp)
+        # self.rightFrontA = IrCamera("bound.rightFront.signalA",1513,self.mp)
+        # self.leftFrontA = IrCamera("bound.leftFront.signalA",1563,self.mp)
+        # self.rightBackA = IrCamera("bound.rightRear.signalA",1613,self.mp)
+        # self.leftBackA = IrCamera("bound.leftRear.signalA",1662,self.mp)
+        # self.rightFrontB = IrCamera("bound.rightFront.signalB",1514,self.mp)
+        # self.leftFrontB = IrCamera("bound.leftFront.signalB",1564,self.mp)
+        # self.rightBackB = IrCamera("bound.rightRear.signalB",1614,self.mp)
+        # self.leftBackB = IrCamera("bound.leftRear.signalB",1663,self.mp)
+
+        self.rightFront = IrCamera(("bound.rightFront.signalA","bound.rightFront.signalB"),(1513,1514),self.mp)
+        self.leftFront = IrCamera(("bound.leftFront.signalA","bound.leftFront.signalB"),(1563,1564),self.mp)
+        self.rightRear = IrCamera(("bound.rightRear.signalA","bound.rightRear.signalB"),(1613,1614),self.mp)
+        self.leftRear = IrCamera(("bound.leftRear.signalA","bound.leftRear.signalB"),(1662,1663),self.mp)
 
         # initialize the lidar camera
         # codes: start laser scan collection, collect raw data
@@ -56,7 +66,7 @@ class SensorHub():
         # probe id 2866: vis.sick.globalScanData type tlv length 4372
         # probe id 2867: vis.sick.localScanData type tlv length 4372
         # probe id 2868: vis.sick.localScanData_EVERY_TICK type tlv length 4372
-        self.lidar = LidarCamera("Raw",3275,self.mp)
+        # self.lidar = LidarCamera("vis.sick.localScanData",3275,self.mp)
         # initialize the nearest obstacle detection of the preprocessed laser data
         # codes give: x, y, and distance
         # probe id 2928: vis.forwardObstacle.x type float length 4
@@ -67,30 +77,68 @@ class SensorHub():
         self.forwardObstacleY = LidarCameraNearestObstacle("vis.forwardObstacle.y",2929,self.mp)
 
         # initialize odometery
-        # TODO: lookup odometry codes
-        # TODO: lookup odometery reset codes
-        self.odometery = Odometer("",0000,self.mp)
+        # probe id 2438: loc.actual.x type float length 4
+        # probe id 2439: loc.actual.y type float length 4
+        # probe id 2456: loc.rawOdometry.x type float length 4
+        # probe id 2457: loc.rawOdometry.y type float length 4
+        # probe id 2458: loc.rawOdometry.h type float length 4
+        # probe id 2459: loc.rawOdometry.v type float length 4
+        # probe id 2460: loc.rawOdometry.w type float length 4
+        # probe id 2461: loc.rawOdometry.l type float length 4
+        # probe id 2462: loc.rawOdometry.r type float length 4
+        # probe id 2463: loc.rawOdometryWGyro.x type float length 4
+        # probe id 2464: loc.rawOdometryWGyro.y type float length 4
+        # probe id 2465: loc.rawOdometryWGyro.h type float length 4
+        # probe id 2466: loc.rawOdometryWGyro.v type float length 4
+        # probe id 2467: loc.rawOdometryWGyro.w type float length 4
+        # probe id 2472: loc.useGyro type bool length 1
+        # probe id 2479: loc.magicGps.x type double length 8
+        # probe id 2480: loc.magicGps.y type double length 8
+        # probe id 2481: loc.magicGps.h type double length 8
+        #self.odometeryX = Odometer("loc.rawOdometry.x",2456,self.mp)
+        #self.odometeryY = Odometer("loc.rawOdometry.y",2457,self.mp)
+        self.odometery = Odometer(("loc.rawOdometry.x","loc.rawOdometry.y","loc.rawOdometry.h"),(2456,2457,2458),self.mp)
 
     def start(self, ros, hostname):
         # runs at the begining of ros node
-        self.mp.enable_probes((1513,1514,1563,1564,1613,1614,1662,1663,3275,2868,2928,2929,2930))
+        # self.mp.enable_probes((1513,
+            # 1514,
+            # 1563,
+            # 1564,
+            # 1613,
+            # 1614,
+            # 1662,
+            # 1663,
+            # 3275,
+            # 2867,
+            # 2928,
+            # 2929,
+            # 2930,
+            # 2456,
+            # 2457
+        # ))
+
+        # turn on the lidar sensor
+        #self.mp.write_probes([(3859,1),(3275,1)])
         
         # start the ir camera nodes
-        self.leftFrontA.init(ros, hostname)
-        self.rightFrontA.init(ros, hostname)
-        self.leftBackA.init(ros, hostname)
-        self.rightBackA.init(ros, hostname)
+        self.leftFront.init(ros, hostname)
+        self.rightFront.init(ros, hostname)
+        self.leftRear.init(ros, hostname)
+        self.rightRear.init(ros, hostname)
 
         # start the lidar camera
-        self.lidar.init(ros, hostname)
+        # self.lidar.init(ros, hostname)
         self.forwardObstacleDist.init(ros, hostname)
         self.forwardObstacleX.init(ros, hostname)
         self.forwardObstacleY.init(ros, hostname)
 
         # start the odometery
-        self.odometery.init(ros, hostname)
+        #self.odometeryX.init(ros, hostname)
+        #self.odometeryY.init(ros, hostname)
+        self.odometery.init(ros,hostname)
 
-    def listen(self):
+    def listen(self, current_time):
         # runs in loop on the ros node
         
         # capture data and read it
@@ -107,16 +155,21 @@ class SensorHub():
         # print("THE QUEUE: ", self.queue)
         # run each node (publish ros nodes)
         # run the ir camera nodes
-        self.leftFrontA.run(self.queue)
-        self.rightFrontA.run(self.queue)
-        self.leftBackA.run(self.queue)
-        self.rightBackA.run(self.queue)
+        self.leftFront.run(self.queue, current_time)
+        self.rightFront.run(self.queue, current_time)
+        self.leftRear.run(self.queue, current_time)
+        self.rightRear.run(self.queue, current_time)
 
         # run the lidar camera
-        self.lidar.run(self.queue)
+        # self.lidar.run(self.queue)
         self.forwardObstacleDist.run(self.queue)
         self.forwardObstacleX.run(self.queue)
         self.forwardObstacleY.run(self.queue)
     
         # run the odometry
-        self.odometery.run(self.queue)
+        #self.odometeryX.run(self.queue)
+        #self.odometeryY.run(self.queue)
+        self.odometery.run(self.queue, current_time)
+        
+    def scan(self):
+        self.mp.write_probe(3275,1)

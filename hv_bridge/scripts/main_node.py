@@ -35,41 +35,50 @@ if __name__ == '__main__':
         # Create the mindprobe instance
         mp = Mindprobe()
         mp.init(host_name)
-        # rest for 3 seconds to allow the mp connection to be fully established
-        time.sleep(3)
+        # wait while the mp connection is fully established
+        while(len(mp.return_probes()) < 3000):
+            time.sleep(1)
+
+        ### Create all the Controllers ###
+        drive = DriveController(mp)
+        arm = ArmController(mp)
+        gripper = GripperController(mp)
+        ### -------------------------- ###
+
+        ### Create Sensor Hub ###
+        hub = SensorHub(mp)
+        ### ----------------- ###
+        
+        time.sleep(1)
 
 		### Drive Controller ###
-        drive = DriveController(mp)
         drive.run(rospy, resource_name(host_name))
         print("DRIVE control running")
-        # rest for a second
-        time.sleep(1)
 		### --------------- ###
 
 		### Arm Controller ###
-        arm = ArmController(mp)
         arm.run(rospy, resource_name(host_name))
         print("ARM control running")
-        # rest for a second
-        time.sleep(1)
 		### --------------- ###
 
 		### Gripper Controller ###
-        gripper = GripperController(mp)
         gripper.run(rospy, resource_name(host_name))
         print("GRIPPER control running")
-        # rest for a second
-        time.sleep(1)
 		### --------------- ###
 
 		### Sensor Hub ###
-        hub = SensorHub(mp)
-        # rest for a second
-        time.sleep(1)
         hub.start(rospy, resource_name(host_name))
-        # rest for a second
-        time.sleep(1)
+        print("sensor HUB running")
 		### --------------- ###
+
+        time.sleep(1)
+
+        ### Start Mindprobe Connection ###
+        # enables probes and starts mode to allow listening
+        mp.start()
+        ### -------------------------- ###
+        
+        time.sleep(3)
 
         # set rate based on the mindprobe refresh rate.
         # default to 100. (mp runs at 200)
@@ -77,11 +86,24 @@ if __name__ == '__main__':
         if(mp.hz):
             hz = mp.hz
         
+        # timer_count_1 = 0
+        # timer_count_2 = 0
         # Start the ROS main loop
         rate = rospy.Rate(hz)
         while not rospy.is_shutdown():
-            # run the sensor data collection
-            hub.listen()
+            # if(timer_count_1 > 10):
+                # # run the sensor data collection
+                # hub.listen()
+                # timer_count_1 = 0
+            # if(timer_count_2 > 100):
+                # hub.scan()
+                # timer_count_2 = 0
+            # if(timer_count_2 == 1):
+                # mp.write_probe(3859,1)
+
+            # timer_count_1 = timer_count_1 + 1
+            # timer_count_2 = timer_count_2 + 1
+            hub.listen(rospy.get_rostime())
 
             rate.sleep()
 
