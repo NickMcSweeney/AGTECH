@@ -122,9 +122,10 @@ class Mindprobe():
         self.connect(host) # sets up the connection
 
     def start(self):
-        self.enable_probes(1125) # enables the virtual start probe
-        self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
-        time.sleep(2)
+        # NOTE: is fake start required
+        #self.enable_probes(1125) # enables the virtual start probe
+        #self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
+        #time.sleep(2)
         self.init_probes() # enable all the queued probes
 
     
@@ -266,7 +267,7 @@ class Mindprobe():
     def init_probes(self):
         # enables all the probes on the start list
         self.enable_probes(tuple(self.probe_list))
-        self.probe_list = []
+        #self.probe_list = []
 
     def start_probes(self):
         # start capturing information from a probe
@@ -383,12 +384,15 @@ class Mindprobe():
             while len(item):
                 (t, l, v, item) = next_tlv(item)
     
-                name = self.probe_defs[t][0]
-                type = self.probe_defs[t][1]
-                val = self.decode_probe_data(type, v)
+                try:
+                    name = self.probe_defs[t][0]
+                    type = self.probe_defs[t][1]
+                    val = self.decode_probe_data(type, v)
 
-                captured_data_obj[name] = val
-
+                    captured_data_obj[name] = val
+                except RuntimeError:
+                    print("name: ", str(name), " type: ", str(type), " val: ", str(val))
+                    
                 # print name, '=', val,
             # print ""
             captured_data_array.append(captured_data_obj)
@@ -470,7 +474,13 @@ class Mindprobe():
     #        return len(data)
             return data[:-1]  # lose the null terminator
         else:
-            return struct.unpack(self.type_table[probe_type][1], data)[0]
+            try:
+                data = struct.unpack(self.type_table[probe_type][1], data)[0]
+                return data
+            except:
+                print("Error in probe decode -- probe_type: ", str(probe_type), " type table: ", self.type_table[probe_type])
+                raise RuntimeError("struct unpack failed")
+            
     
     
     def send_script(self, scriptname):

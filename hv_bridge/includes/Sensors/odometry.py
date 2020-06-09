@@ -2,7 +2,7 @@
 from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance, Pose, Twist, Vector3, Quaternion, Point
-import ros
+import rospy
 import tf
 import sys, os
 SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))

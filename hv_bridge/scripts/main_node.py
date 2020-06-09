@@ -5,11 +5,13 @@ import sys, os, time
 # add local python scripts to the path so that they can be iported
 sys.path.append(os.path.abspath(os.path.join(sys.path[0] ,"../../resources")))
 sys.path.append(os.path.abspath(os.path.join(sys.path[0] ,"../includes")))
+sys.path.append(os.path.abspath(os.path.join(sys.path[0] ,"../srv")))
 
 from utils import *
 from mp import *
 from Controllers import *
 from Sensors import *
+from Services import *
 
 # Global variables
 host_name = "hai-1095.local" # this is the hostname the robot being controlled.
@@ -77,6 +79,10 @@ if __name__ == '__main__':
         # enables probes and starts mode to allow listening
         mp.start()
         ### -------------------------- ###
+
+        ### Start Services ###
+        follow = FollowService(mp, rospy) # allows the follow me behavior to be toggled on.
+        ### -------------- ###
         
         time.sleep(3)
 
@@ -86,6 +92,7 @@ if __name__ == '__main__':
         if(mp.hz):
             hz = mp.hz
         
+        print("starting publishing data from " + host_name + " at " + str(hz) + "hz")
         # timer_count_1 = 0
         # timer_count_2 = 0
         # Start the ROS main loop
@@ -107,8 +114,15 @@ if __name__ == '__main__':
 
             rate.sleep()
 
+### TODO: add rospy.on_shutdown(callback)
+
         # run the mp disconnect function to safely close down the connection to the robot
         mp.disconnect()
+        # stop all services
+        follow.stop()
     except rospy.ROSInterruptException:
+        # stop the midprobe connection
         mp.disconnect()
+        # stop all services
+        follow.stop()
         pass
