@@ -116,19 +116,30 @@ class Mindprobe():
             13: ('string', ''),    # variable-size null-terminated char string
         }
         self.probe_list = [] 
+        self.listener_pipe = None
         
     def init(self, host):
         # initialize the mp connection
+        self.hostname = host
         self.connect(host) # sets up the connection
 
     def start(self):
         # NOTE: is fake start required
         #self.enable_probes(1125) # enables the virtual start probe
-        #self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
-        #time.sleep(2)
+        self.write_probe(1125,1) # sets the start to TRUE. this 'starts' the robot.
+        time.sleep(2)
         self.init_probes() # enable all the queued probes
 
-    
+    def stop(self):
+        # end everything that is running
+        # sets the start to FALSE. this 'stops' the robot.
+        # sets flag pulled to true
+        self.write_probes([(2426,1),(1125,0),(2419,1)])
+        print("virtual e-stop triggered")
+        time.sleep(1)
+        self.write_probes([(2426,0),(2419,0)])
+        print str(self.hostname) +  " has stopped all running processes"
+
     def connect(self, host, port = 4400):
         # Makes a connection to the robot.
         # performs an initialization handshake to get version, tick rate and probes
@@ -170,9 +181,19 @@ class Mindprobe():
             (self.version, self.hz, len(self.probe_defs.keys()))
     
     def disconnect(self):
-        # end the connection
-        self.stop_listener()
-        self.s.close()
+        try:
+            # call e-stop to and all functionality before breaking connection
+            self.stop() 
+
+            # end the connection
+            self.stop_listener()
+            self.s.close()
+            print("mindprobe has disconnected")
+            return True
+        except Exception as e:
+            print("mp disconnect has failed:")
+            print(e)
+            return False
     
     def discover_probes(self):
         # gets all the available probes
@@ -474,11 +495,12 @@ class Mindprobe():
     #        return len(data)
             return data[:-1]  # lose the null terminator
         else:
+            # try to unpack data
+            # NOTE: this was added to prevent total falure when packets type data failed (specifically the float type)
             try:
                 data = struct.unpack(self.type_table[probe_type][1], data)[0]
                 return data
             except:
-                print("Error in probe decode -- probe_type: ", str(probe_type), " type table: ", self.type_table[probe_type])
                 raise RuntimeError("struct unpack failed")
             
     
@@ -525,7 +547,7 @@ class Mindprobe():
     
     def stop_listener(self):
         # close listener connection
-        os.write(self.listener_pipe[1], 'bye')
+        #os.write(self.listener_pipe[1], 'bye')
         os.close(self.listener_pipe[1])
         self.listener.join()
 

@@ -27,6 +27,8 @@ if __name__ == '__main__':
     try:
         # Init the connection with the ROS system
         rospy.init_node("hai_main_node", anonymous=True)
+        # TODO: add rospy.on_shutdown(callback)
+
         # if present, set the hostname based on the argument inputed by the user
         if len(sys.argv) < 2:
             host_name = "hai-1095.local"
@@ -82,21 +84,26 @@ if __name__ == '__main__':
 
         ### Start Services ###
         follow = FollowService(mp, rospy) # allows the follow me behavior to be toggled on.
+        avoid = AvoidService(mp, rospy) # allows the avoid collision behavior to be toggled on.
         ### -------------- ###
         
         time.sleep(3)
+        # handle closing everything nicely when ros shutsdown
+        rospy.on_shutdown(lambda  :  follow.stop() & avoid.stop() & mp.disconnect())
 
         # set rate based on the mindprobe refresh rate.
         # default to 100. (mp runs at 200)
         hz = 100
         if(mp.hz):
             hz = mp.hz
-        
-        print("starting publishing data from " + host_name + " at " + str(hz) + "hz")
+
         # timer_count_1 = 0
         # timer_count_2 = 0
+
         # Start the ROS main loop
         rate = rospy.Rate(hz)
+
+        print("starting publishing data from " + host_name + " at " + str(hz) + "hz")
         while not rospy.is_shutdown():
             # if(timer_count_1 > 10):
                 # # run the sensor data collection
@@ -114,15 +121,13 @@ if __name__ == '__main__':
 
             rate.sleep()
 
-### TODO: add rospy.on_shutdown(callback)
-
-        # run the mp disconnect function to safely close down the connection to the robot
-        mp.disconnect()
-        # stop all services
-        follow.stop()
     except rospy.ROSInterruptException:
-        # stop the midprobe connection
-        mp.disconnect()
-        # stop all services
-        follow.stop()
+        print("ROS interupt called -- Ending Processes")
         pass
+    except Exception as e:
+        # general error handling
+        print(e)
+    finally:
+        # NOTE: this may not actually be called in most cases, and should be handled in the on shutdown function
+        #mp.disconnect()
+        print("GOODBYE")
