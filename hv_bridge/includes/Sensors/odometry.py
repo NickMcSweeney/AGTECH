@@ -42,6 +42,7 @@ class Odometer(Getter):
             
         heading =  tf.transformations.quaternion_from_euler(0. , 0. , data[2])
         odom.pose.pose = Pose(Point(data[0],data[1],0.),Quaternion(heading[0],heading[1],heading[2],heading[3]))
+        odom.twist.twist = Twist(Vector3(data[3],0,0),Vector3(0,0,data[4]))
         
         # publish data
         Getter.run(self,odom)

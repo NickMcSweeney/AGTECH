@@ -32,6 +32,8 @@ class SensorHub():
                 "loc.rawOdometry.x":0,
                 "loc.rawOdometry.y":0,
                 "loc.rawOdometry.h":0,
+                "loc.rawOdometry.v":0,
+                "loc.rawOdometry.w":0,
                 "loc.actual.x":0,
                 "loc.actual.y":0
         }
@@ -97,7 +99,7 @@ class SensorHub():
         # probe id 2481: loc.magicGps.h type double length 8
         #self.odometeryX = Odometer("loc.rawOdometry.x",2456,self.mp)
         #self.odometeryY = Odometer("loc.rawOdometry.y",2457,self.mp)
-        self.odometery = Odometer(("loc.rawOdometry.x","loc.rawOdometry.y","loc.rawOdometry.h"),(2456,2457,2458),self.mp)
+        self.odometery = Odometer(("loc.rawOdometry.x","loc.rawOdometry.y","loc.rawOdometry.h", "loc.rawOdometry.v", "loc.rawOdometry.w"),(2456,2457,2458,2459,2460),self.mp)
 
     def start(self, ros, hostname):
         # runs at the begining of ros node

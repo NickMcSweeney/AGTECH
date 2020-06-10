@@ -547,7 +547,8 @@ class Mindprobe():
     
     def stop_listener(self):
         # close listener connection
-        #os.write(self.listener_pipe[1], 'bye')
+        # TODO: why does this line fail?
+        # os.write(self.listener_pipe[1], 'bye')
         os.close(self.listener_pipe[1])
         self.listener.join()
 
