@@ -1,10 +1,18 @@
-#ifdef HV_ROBOT
-#define HV_ROBOT
+#ifndef HV_ROBOT_H_
+#define HV_ROBOT_H_
+
+// standard includes
+#include <map>
 
 // ROS includes
 #include <ros/ros.h>
 
+#include <nav_msgs/Odometry.h>
+#include <std_msgs/Float32.h>
+#include <geometry_msgs/Vector3.h>
+
 // local includes
+#include "harvey/states.h"
 #include "harvey/robot_state.h"
 
 class HvRobot {
@@ -25,11 +33,11 @@ class HvRobot {
   ros::Publisher vel_pub;
 
   RobotState robot_state_manager;
-  std::map<char, states> input_codes;
+  std::map<char, State> input_codes;
 
 public:
   HvRobot();
-  states listen();
+  State listen();
 
 private:
   // functions for performing state based tasks
@@ -41,7 +49,7 @@ private:
   void odom_callback(const nav_msgs::Odometry::ConstPtr &msg);
   void ir_callback(const std_msgs::Float32::ConstPtr &msg);
   // TODO: replace this with a better option
-  void nearest_obj_callback(const std_msgs::Vector3 &msg);
+  void nearest_obj_callback(const geometry_msgs::Vector3 &msg);
 };
 
 #endif

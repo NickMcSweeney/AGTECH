@@ -1,25 +1,25 @@
-#ifdef ROBOT_STATE
-#define ROBOT_STATE
+#ifndef ROBOT_STATE_H_
+#define ROBOT_STATE_H_
 
-#include <function>
+#include <functional>
 #include <map>
 
-// robot states
-enum states { Follow, TrackBack, ReturnHome, Hold };
+// local includes
+#include "harvey/states.h"
 
 class RobotState {
   /**
    * State management for the hv vehicle
    * executes a follow and fetch protocol
    */
-   
-  states state_;
-  std::map<states, std::function<void()>> tasks;
+
+  State state_;
+  std::map<State, std::function<void()>> tasks;
 
 public:
   RobotState();
-  void update_state(states new_state);
-  void load_task_dictonary(std::map new_dictionary);
+  void update_state(State new_state);
+  void load_task_dictonary(std::map<State, std::function<void()>> new_dictionary);
 
 private:
   void manage_state_change();

@@ -7,10 +7,12 @@
 #include <ros/ros.h>
 
 // local includes
-#include "harvey/hv_robot.h"
-#include "harvey/robot_state.h"
 
-using namespace std;
+using  std::function;
+using  std::map;
+using  std::vector;
+using  std::string;
+
 
 //////////////////////////////////////////////////////////////
 //
