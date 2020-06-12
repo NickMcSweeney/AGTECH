@@ -20,6 +20,7 @@ public:
   RobotState();
   void update_state(State new_state);
   void load_task_dictonary(std::map<State, std::function<void()>> new_dictionary);
+  State current_state();
 
 private:
   void manage_state_change();

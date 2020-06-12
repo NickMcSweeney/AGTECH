@@ -37,7 +37,7 @@ class HvRobot {
 
 public:
   HvRobot();
-  State listen();
+  bool listen(int dt);
 
 private:
   // functions for performing state based tasks

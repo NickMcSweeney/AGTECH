@@ -2,16 +2,20 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <future>
 
 // ROS includes
 #include <ros/ros.h>
 
 // local includes
+#include "harvey/hv_robot.h"
 
 using  std::function;
 using  std::map;
 using  std::vector;
 using  std::string;
+using  std::async;
+using  std::future;
 
 
 //////////////////////////////////////////////////////////////
@@ -24,18 +28,27 @@ int main(int argc, char **argv) {
 
   // Init the connection with the ROS system
   ros::init(argc, argv, "harvey");
+  
+  HvRobot harvey_ = HvRobot();
 
   ROS_INFO("STARTING");
   float current_time = ros::Time::now().toSec();
   float last_time = ros::Time::now().toSec();
   float delta_time = current_time - last_time;
   // ROS main loop
-  ros::Rate loop_rate(10);
+  int hz = 10;
+  ros::Rate loop_rate(hz);
   while (ros::ok()) {
+    future<bool> listener = async(&HvRobot::listen,&harvey_,hz);
     // update time
     last_time = current_time;
     current_time = ros::Time::now().toSec();
     delta_time = current_time - last_time;
+
+    bool ret = listener.get();
+    if(ret == true) {
+      ROS_INFO("Changed state");
+    }
 
     ros::spinOnce();
     loop_rate.sleep();
