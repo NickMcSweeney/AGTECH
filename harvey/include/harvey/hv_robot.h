@@ -14,6 +14,7 @@
 // local includes
 #include "harvey/states.h"
 #include "harvey/robot_state.h"
+#include "harvey/location_track.h"
 
 class HvRobot {
   /**
@@ -37,14 +38,21 @@ class HvRobot {
   RobotState robot_state_manager;
   std::map<char, State> input_codes;
 
+  LocationTrack path_;
+
 public:
   HvRobot();
   bool listen(int dt);
+  void run();
 
 private:
-  // functions for performing state based tasks
+  //functions for performing state based tasks
+  void save_location();
+  void go_to_prev_loc();
+  void go_to_next_loc();
+  // functions for performing state change based tasks
+  void next();
   void follow();
-  void call_follow_srv(int input_val);
   void return_home();
   void track_back();
   void hold();
@@ -53,6 +61,8 @@ private:
   void ir_callback(const std_msgs::Float32::ConstPtr &msg);
   // TODO: replace this with a better option
   void nearest_obj_callback(const geometry_msgs::Vector3 &msg);
+  // utility functions
+  void call_follow_srv(int input_val);
 };
 
 #endif

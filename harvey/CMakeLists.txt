@@ -5,7 +5,7 @@ project(harvey)
 add_compile_options(-std=c++11)
 
 ## Set variables
-set(LIBS lib/hv_robot.cpp lib/robot_state.cpp)
+set(LIBS lib/hv_robot.cpp lib/robot_state.cpp lib/location_track.cpp)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -110,9 +110,9 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES harvey
+  #LIBRARIES harvey
   CATKIN_DEPENDS geometry_msgs roscpp std_msgs nav_msgs tf message_runtime
-  DEPENDS system_lib
+  #DEPENDS system_lib
 )
 
 ###########

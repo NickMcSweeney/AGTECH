@@ -1,7 +1,6 @@
 // General includes
 #include <cstring>
 #include <iostream>
-#include <vector>
 #include <future>
 
 // ROS includes
@@ -44,6 +43,9 @@ int main(int argc, char **argv) {
     last_time = current_time;
     current_time = ros::Time::now().toSec();
     delta_time = current_time - last_time;
+
+    // run the robot
+    harvey_.run();
 
     bool ret = listener.get();
     if(ret == true) {
