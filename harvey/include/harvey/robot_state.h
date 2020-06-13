@@ -14,16 +14,18 @@ class RobotState {
    */
 
   State state_;
-  std::map<State, std::function<void()>> tasks;
+  std::map<State, std::function<void()>> tasks_;
+  const State state_order [4] = {State::Hold, State::Follow, State::ReturnHome, State::TrackBack};
 
 public:
   RobotState();
   void update_state(State new_state);
-  void load_task_dictonary(std::map<State, std::function<void()>> new_dictionary);
+  void load_task_dictionary(std::map<State, std::function<void()>> new_dictionary);
   State current_state();
 
 private:
   void manage_state_change();
+  State cycle_state(State current_state);
 };
 
 #endif

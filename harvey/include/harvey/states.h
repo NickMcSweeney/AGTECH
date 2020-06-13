@@ -5,10 +5,11 @@ namespace States
 {
   enum State
   {
-     Follow,
-     TrackBack,
-     ReturnHome,
-	 Hold
+    Follow,
+    TrackBack,
+    ReturnHome,
+    Hold,
+    Next
   };
 }
 typedef States::State State;

@@ -31,6 +31,8 @@ class HvRobot {
   ros::Publisher arm_pub;
   ros::Publisher gripper_pub;
   ros::Publisher vel_pub;
+  // Services
+  ros::ServiceClient follow_srv;
 
   RobotState robot_state_manager;
   std::map<char, State> input_codes;
@@ -42,6 +44,7 @@ public:
 private:
   // functions for performing state based tasks
   void follow();
+  void call_follow_srv(int input_val);
   void return_home();
   void track_back();
   void hold();
