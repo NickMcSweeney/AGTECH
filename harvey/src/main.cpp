@@ -28,24 +28,24 @@ int main(int argc, char **argv) {
   // Init the connection with the ROS system
   ros::init(argc, argv, "harvey");
   
-  HvRobot harvey_ = HvRobot();
-
   ROS_INFO("STARTING");
-  float current_time = ros::Time::now().toSec();
-  float last_time = ros::Time::now().toSec();
-  float delta_time = current_time - last_time;
+  double current_time = ros::Time::now().toSec();
+  double delta_time = 0;
+
+  HvRobot harvey_ = HvRobot(&delta_time);
+
   // ROS main loop
-  int hz = 10;
+  int hz = 100;
   ros::Rate loop_rate(hz);
   while (ros::ok()) {
-    future<bool> listener = async(&HvRobot::listen,&harvey_,hz);
+    future<bool> listener = async(&HvRobot::listen,&harvey_,(0.8/hz));
     // update time
-    last_time = current_time;
+    double last_time = current_time;
     current_time = ros::Time::now().toSec();
-    delta_time = current_time - last_time;
+    delta_time = delta_time + (current_time - last_time);
 
     // run the robot
-    harvey_.run();
+    harvey_.run(0.5);
 
     bool ret = listener.get();
     if(ret == true) {

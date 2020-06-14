@@ -11,6 +11,7 @@ public:
   double y;
 
   Location(double x, double y);
+  double distance(Location loc);
 };
 
 #endif

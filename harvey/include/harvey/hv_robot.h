@@ -15,6 +15,7 @@
 #include "harvey/states.h"
 #include "harvey/robot_state.h"
 #include "harvey/location_track.h"
+#include "harvey/location.h"
 
 class HvRobot {
   /**
@@ -22,6 +23,7 @@ class HvRobot {
    * handles communication with the hv_bridge node
    */
 
+private:
   // ros node handler connection
   ros::NodeHandle nh;
   // Subscribers
@@ -38,18 +40,25 @@ class HvRobot {
   RobotState robot_state_manager;
   std::map<char, State> input_codes;
 
+  double * dt_;
+  const double TO_LOC_THRESHOLD = 0.1;
+
+  LocationTrack path_home_;
   LocationTrack path_;
+  Location current_pos_ = Location(0,0);
+  Location goal_pos_ = Location(0,0);
+  double velocity_v;
+  double velocity_th;
 
 public:
-  HvRobot();
+  HvRobot(double * time);
   bool listen(int dt);
-  void run();
+  void run(const double INTERVAL);
 
 private:
   //functions for performing state based tasks
-  void save_location();
-  void go_to_prev_loc();
-  void go_to_next_loc();
+  void save_location(LocationTrack *t);
+  void go_to_loc(LocationTrack *t);
   // functions for performing state change based tasks
   void next();
   void follow();

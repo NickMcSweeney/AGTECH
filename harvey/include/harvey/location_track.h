@@ -21,11 +21,13 @@ public:
   LocationTrack();
 
   void add(double x, double y);
+  void add_location(Location new_loc);
 
   Location shift();
   
   Location pop();
   
+  bool isEmpty();
 };
 
 #endif
