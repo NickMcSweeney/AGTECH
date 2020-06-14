@@ -1,7 +1,7 @@
 #ifndef LOCATION_H_
 #define LOCATION_H_
 
-class Location {
+class CartesianCoordinate {
   /**
    * location on x-y plane
    */
@@ -10,8 +10,8 @@ public:
   double x;
   double y;
 
-  Location(double x, double y);
-  double distance(Location loc);
+  CartesianCoordinate(double x, double y);
+  double distance(CartesianCoordinate loc);
 };
 
 #endif

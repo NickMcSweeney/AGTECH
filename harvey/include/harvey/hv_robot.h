@@ -3,6 +3,7 @@
 
 // standard includes
 #include <map>
+#include <string>
 
 // ROS includes
 #include <ros/ros.h>
@@ -14,8 +15,8 @@
 // local includes
 #include "harvey/states.h"
 #include "harvey/robot_state.h"
-#include "harvey/location_track.h"
-#include "harvey/location.h"
+#include "harvey/track.h"
+#include "harvey/cartesian_coordinates.h"
 
 class HvRobot {
   /**
@@ -43,22 +44,24 @@ private:
   double * dt_;
   const double TO_LOC_THRESHOLD = 0.1;
 
-  LocationTrack path_home_;
-  LocationTrack path_;
-  Location current_pos_ = Location(0,0);
-  Location goal_pos_ = Location(0,0);
+  Track path_home_;
+  Track path_;
+  CartesianCoordinate current_pos_ = CartesianCoordinate(0,0);
+  CartesianCoordinate goal_pos_ = CartesianCoordinate(0,0);
+  double current_vel_; 
+  double current_pos_th_;
   double velocity_v;
   double velocity_th;
 
 public:
-  HvRobot(double * time);
+  HvRobot(std::string name, double * time);
   bool listen(int dt);
   void run(const double INTERVAL);
 
 private:
   //functions for performing state based tasks
-  void save_location(LocationTrack *t);
-  void go_to_loc(LocationTrack *t);
+  void save_location(Track *t);
+  void go_to_loc(Track *t);
   // functions for performing state change based tasks
   void next();
   void follow();
@@ -70,6 +73,8 @@ private:
   void ir_callback(const std_msgs::Float32::ConstPtr &msg);
   // TODO: replace this with a better option
   void nearest_obj_callback(const geometry_msgs::Vector3 &msg);
+  // publish functions
+  void publish_velocity();
   // utility functions
   void call_follow_srv(int input_val);
 };

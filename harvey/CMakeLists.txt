@@ -5,7 +5,7 @@ project(harvey)
 add_compile_options(-std=c++11)
 
 ## Set variables
-set(LIBS lib/hv_robot.cpp lib/robot_state.cpp lib/location_track.cpp)
+set(LIBS lib/hv_robot.cpp lib/robot_state.cpp lib/track.cpp)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)

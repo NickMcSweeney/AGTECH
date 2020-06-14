@@ -5,27 +5,27 @@
 #include <deque>
 
 // local includes
-#include "harvey/location.h"
+#include "harvey/cartesian_coordinates.h"
 
-class LocationTrack {
+class Track {
   /**
    * Tracking array for manageing location history of a robot
    */
 
 private:
 
-  std::deque<Location> history_;
+  std::deque<CartesianCoordinate> history_;
   
 public:
 
-  LocationTrack();
+  Track();
 
   void add(double x, double y);
-  void add_location(Location new_loc);
+  void add_location(CartesianCoordinate new_loc);
 
-  Location shift();
+  CartesianCoordinate shift();
   
-  Location pop();
+  CartesianCoordinate pop();
   
   bool isEmpty();
 };

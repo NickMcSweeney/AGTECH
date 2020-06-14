@@ -31,8 +31,10 @@ int main(int argc, char **argv) {
   ROS_INFO("STARTING");
   double current_time = ros::Time::now().toSec();
   double delta_time = 0;
-
-  HvRobot harvey_ = HvRobot(&delta_time);
+  
+  string robot_name = "hai-1095.local";
+  if(argc == 1) robot_name = argv[0];
+  HvRobot harvey_ = HvRobot(robot_name, &delta_time);
 
   // ROS main loop
   int hz = 100;
