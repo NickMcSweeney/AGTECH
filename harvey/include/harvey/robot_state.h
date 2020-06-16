@@ -15,7 +15,7 @@ class RobotState {
 
   State state_;
   std::map<State, std::function<void()>> tasks_;
-  const State state_order [4] = {State::Hold, State::Follow, State::ReturnHome, State::TrackBack};
+  const State state_order [5] = {State::Hold, State::Follow, State::ReturnHome, State::Collect, State::TrackBack};
 
 public:
   RobotState();

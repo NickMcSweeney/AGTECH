@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 import sys, os
 SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))
 sys.path.append(SCRIPTS_PATH)
@@ -23,4 +23,4 @@ class GripperController(Setter):
         # intializes the mp connection and runs a subscriber for setting the gripper position.
         Setter.init(self,1080)
 		
-        rospy.Subscriber('/'+hostname+'/set_gripper_pos', Float64, self.callback)
+        rospy.Subscriber('/'+hostname+'/set_gripper_pos', Float32, self.callback)

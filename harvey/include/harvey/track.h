@@ -28,6 +28,10 @@ public:
   CartesianCoordinate pop();
   
   bool isEmpty();
+
+  int size();
+  CartesianCoordinate get(int i);
+  void clear();
 };
 
 #endif

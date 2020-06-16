@@ -9,6 +9,7 @@ namespace States
     TrackBack,
     ReturnHome,
     Hold,
+    Collect,
     Next
   };
 }

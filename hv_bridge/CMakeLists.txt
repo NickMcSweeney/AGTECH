@@ -60,7 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   mp_toggle.srv
-  ToggleMP.srv
+  mp_set_target.srv
   #mp_query.srv
 )
 

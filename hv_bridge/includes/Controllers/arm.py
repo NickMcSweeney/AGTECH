@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 import sys, os
 SCRIPTS_PATH = os.path.abspath(os.path.join(sys.path[0] ,"../../../resources"))
 sys.path.append(SCRIPTS_PATH)
@@ -22,4 +22,4 @@ class ArmController(Setter):
     def run(self, rospy, hostname):
         # intializes the mp connection and runs a subscriber for setting the arm position.
         Setter.init(self,1077)
-        rospy.Subscriber('/'+hostname+'/set_arm_pos', Float64, self.callback)
+        rospy.Subscriber('/'+hostname+'/set_arm_pos', Float32, self.callback)

@@ -5,4 +5,5 @@
 ###
 
 from follow import FollowService 
+from pick_target import PickTargetService 
 from avoid import AvoidService 

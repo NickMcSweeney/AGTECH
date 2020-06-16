@@ -8,6 +8,7 @@ sys.path.append(SCRIPTS_PATH)
 from ir import IrCamera
 from lidar import LidarCamera, LidarCameraNearestObstacle
 from odometry import Odometer
+from gripper import Gripper
 
 class SensorHub():
     ###
@@ -34,8 +35,14 @@ class SensorHub():
                 "loc.rawOdometry.h":0,
                 "loc.rawOdometry.v":0,
                 "loc.rawOdometry.w":0,
+                "loc.rawOdometryWGyro.x":0,
+                "loc.rawOdometryWGyro.y":0,
+                "loc.rawOdometryWGyro.h":0,
+                "loc.rawOdometryWGyro.v":0,
+                "loc.rawOdometryWGyro.w":0,
                 "loc.actual.x":0,
-                "loc.actual.y":0
+                "loc.actual.y":0,
+                "manip.botGotPot":0
         }
         # initialize the ir cameras to colect signals
         # codes are for signalA, signalB
@@ -100,6 +107,10 @@ class SensorHub():
         #self.odometeryX = Odometer("loc.rawOdometry.x",2456,self.mp)
         #self.odometeryY = Odometer("loc.rawOdometry.y",2457,self.mp)
         self.odometery = Odometer(("loc.rawOdometry.x","loc.rawOdometry.y","loc.rawOdometry.h", "loc.rawOdometry.v", "loc.rawOdometry.w"),(2456,2457,2458,2459,2460),self.mp)
+        self.odometeryGyro = Odometer(("loc.rawOdometryWGyro.x","loc.rawOdometryWGyro.y","loc.rawOdometryWGyro.h", "loc.rawOdometryWGyro.v", "loc.rawOdometryWGyro.w"),(2463,2464,2465,2466,2467),self.mp)
+
+        #probe id 1100: manip.botGotPot type bool length 1
+        self.gripper = Gripper("manip.botGotPot",1100,self.mp)
 
     def start(self, ros, hostname):
         # runs at the begining of ros node
@@ -139,6 +150,10 @@ class SensorHub():
         #self.odometeryX.init(ros, hostname)
         #self.odometeryY.init(ros, hostname)
         self.odometery.init(ros,hostname)
+        self.odometeryGyro.init(ros,hostname)
+
+        # start gripper
+        self.gripper.init(ros,hostname)
 
     def listen(self, current_time):
         # runs in loop on the ros node
@@ -172,6 +187,10 @@ class SensorHub():
         #self.odometeryX.run(self.queue)
         #self.odometeryY.run(self.queue)
         self.odometery.run(self.queue, current_time)
+        self.odometeryGyro.run(self.queue, current_time)
         
+        # run gripper state collection
+        self.gripper.run(self.queue, current_time)
+
     def scan(self):
         self.mp.write_probe(3275,1)

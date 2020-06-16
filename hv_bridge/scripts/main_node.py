@@ -84,12 +84,13 @@ if __name__ == '__main__':
 
         ### Start Services ###
         follow = FollowService(mp, rospy) # allows the follow me behavior to be toggled on.
+        pick = PickTargetService(mp, rospy) # allows the setting an x-y coord to collect a pot from.
         avoid = AvoidService(mp, rospy) # allows the avoid collision behavior to be toggled on.
         ### -------------- ###
         
         time.sleep(3)
         # handle closing everything nicely when ros shutsdown
-        rospy.on_shutdown(lambda  :  follow.stop() & avoid.stop() & mp.disconnect())
+        rospy.on_shutdown(lambda  :  follow.stop() & pick.stop() & avoid.stop() & mp.disconnect())
 
         # set rate based on the mindprobe refresh rate.
         # default to 100. (mp runs at 200)
