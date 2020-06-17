@@ -69,6 +69,7 @@ HvRobot::HvRobot(string name, double * dt) {
   //this->follow_srv = this->nh.serviceClient<hv_bridge::mp_toggle>("FollowMe");
   this->follow_srv = this->nh.serviceClient<harvey::ToggleMP>("/FollowMe");
   this->set_pick_srv = this->nh.serviceClient<harvey::SetTargetMP>("/SetPickTarget");
+  this->set_loc_srv = this->nh.serviceClient<harvey::SetTargetMP>("/SetLoc");
   this->pick_srv = this->nh.serviceClient<harvey::ToggleMP>("/RunPick");
 
   // enum states { Follow, TrackBack, ReturnHome, Hold };
@@ -172,13 +173,8 @@ void HvRobot::run(const double INTERVAL) {
     case State::Collect  :
       // save current location
       if(this->has_item_ == true){ 
-        ROS_INFO("bot has the item");
         this->call_pick_srv(0);
         this->robot_state_manager.update_state(State::Hold);
-      }
-      if(*(this->dt_) >= INTERVAL) {
-        this->save_location(&(this->path_));
-        *(this->dt_) = 0;
       }
       break;
   
@@ -293,15 +289,18 @@ void HvRobot::hold() {
   ROS_INFO("Robot is holding");
   this->velocity_v = 0;
   this->velocity_th = 0;
-  this->call_set_pick_target_srv(0,0);
+  this->call_set_pick_target_srv(this->current_pos_.x,this->current_pos_.y);
   //this->goal_pos_ = this->current_pos_;
 }
 
 void HvRobot::collect_item() {
   // identify nearest object and collect it
   // should use call back from collection from nearest object
-  this->call_set_pick_target_srv(1,0);
+  double x = this->current_pos_.x;
+  double y = this->current_pos_.y;
+  this->call_set_pick_target_srv(x,y);
   this->call_pick_srv(1);
+  this->call_set_loc_srv(x,y);
 }
 
 
@@ -379,6 +378,16 @@ void HvRobot::call_set_pick_target_srv(int request_x,int request_y) {
     ROS_INFO("set pick target");
   } else {
     ROS_INFO("request to set pick target failed");
+  }
+}
+void HvRobot::call_set_loc_srv(int request_x,int request_y) {
+  harvey::SetTargetMP srv;
+  srv.request.x = request_x;
+  srv.request.y = request_y;
+  if(this->set_loc_srv.call(srv)){
+    ROS_INFO("set loc target");
+  } else {
+    ROS_INFO("request to set loc failed");
   }
 }
 void HvRobot::call_pick_srv(int request_val) {
