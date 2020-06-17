@@ -69,7 +69,6 @@ HvRobot::HvRobot(string name, double * dt) {
   //this->follow_srv = this->nh.serviceClient<hv_bridge::mp_toggle>("FollowMe");
   this->follow_srv = this->nh.serviceClient<harvey::ToggleMP>("/FollowMe");
   this->set_pick_srv = this->nh.serviceClient<harvey::SetTargetMP>("/SetPickTarget");
-  this->set_loc_srv = this->nh.serviceClient<harvey::SetTargetMP>("/SetLoc");
   this->pick_srv = this->nh.serviceClient<harvey::ToggleMP>("/RunPick");
 
   // enum states { Follow, TrackBack, ReturnHome, Hold };
@@ -298,9 +297,10 @@ void HvRobot::collect_item() {
   // should use call back from collection from nearest object
   double x = this->current_pos_.x;
   double y = this->current_pos_.y;
+  double th = this->current_pos_th_;
+  
   this->call_set_pick_target_srv(x,y);
   this->call_pick_srv(1);
-  this->call_set_loc_srv(x,y);
 }
 
 
@@ -378,16 +378,6 @@ void HvRobot::call_set_pick_target_srv(int request_x,int request_y) {
     ROS_INFO("set pick target");
   } else {
     ROS_INFO("request to set pick target failed");
-  }
-}
-void HvRobot::call_set_loc_srv(int request_x,int request_y) {
-  harvey::SetTargetMP srv;
-  srv.request.x = request_x;
-  srv.request.y = request_y;
-  if(this->set_loc_srv.call(srv)){
-    ROS_INFO("set loc target");
-  } else {
-    ROS_INFO("request to set loc failed");
   }
 }
 void HvRobot::call_pick_srv(int request_val) {

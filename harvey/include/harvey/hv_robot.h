@@ -43,7 +43,6 @@ private:
   ros::Publisher path_pub;
   // Services
   ros::ServiceClient follow_srv;
-  ros::ServiceClient set_loc_srv;
   ros::ServiceClient set_pick_srv;
   ros::ServiceClient pick_srv;
 
@@ -92,7 +91,6 @@ private:
   // utility functions
   void call_follow_srv(int input_val);
   void call_set_pick_target_srv(int request_x,int request_y);
-  void call_set_loc_srv(int request_x,int request_y);
   void call_pick_srv(int request_val);
 };
 

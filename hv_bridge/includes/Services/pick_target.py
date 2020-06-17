@@ -13,6 +13,7 @@ SET_X_CODE = 3486
 SET_Y_CODE = 3487
 SET_X_LOC_CODE = 2438
 SET_Y_LOC_CODE = 2439
+SET_H_LOC_CODE = 2440
 PSEUDO_START_CODE = 1125
 BOT_GOT_POT_CODE = 1100
 
@@ -22,7 +23,6 @@ class PickTargetService():
         # contstruct basics for 
         self.mp = mp
         self.serv_set = ros.Service('SetPickTarget', mp_set_target, self.set_pick_target)
-        self.serv_loc = ros.Service('SetLoc', mp_set_target, self.set_bot_loc)
         self.serv_run = ros.Service('RunPick', mp_toggle, self.toggle_pick)
 
     def stop(self):
@@ -38,14 +38,7 @@ class PickTargetService():
     def set_pick_target(self,req):
         # set values for target
         self.mp.write_probe(BOT_GOT_POT_CODE, 0)
-        self.mp.write_probe(SET_X_CODE, req.x)
-        self.mp.write_probe(SET_Y_CODE, req.y)
-
-        return "suceess: set target to (" + str(req.x)+","+str(req.y)+")"
-        
-    def set_bot_loc(self,req):
-        self.mp.write_probe(SET_X_LOC_CODE, req.x)
-        self.mp.write_probe(SET_Y_LOC_CODE, req.y)
+        self.mp.write_probes([(SET_X_CODE, req.x),(SET_Y_CODE, req.y)])
 
         return "suceess: set target to (" + str(req.x)+","+str(req.y)+")"
         
