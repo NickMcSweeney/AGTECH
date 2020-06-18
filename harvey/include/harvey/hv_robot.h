@@ -82,6 +82,7 @@ private:
   void track_back();
   void hold();
   void drop_item();
+  void manual_op();
   // callback functions for ros subscribers
   void odom_callback(const nav_msgs::Odometry::ConstPtr &msg);
   void ir_callback(const std_msgs::Float32::ConstPtr &msg);

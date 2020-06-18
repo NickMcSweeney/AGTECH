@@ -83,6 +83,7 @@ HvRobot::HvRobot(string name, double * dt) {
   tasks[State::Collect] = [this]() { collect_item(); };
   tasks[State::ReturnHome] = [this]() { return_home(); };
   tasks[State::Drop] = [this]() { drop_item(); };
+  tasks[State::Manual] = [this]() { manual_op(); };
   this->robot_state_manager.load_task_dictionary(tasks);
 
   // map input key codes to states
@@ -93,6 +94,7 @@ HvRobot::HvRobot(string name, double * dt) {
   this->input_codes['c'] = State::Collect;
   this->input_codes['b'] = State::TrackBack;
   this->input_codes['d'] = State::Drop;
+  this->input_codes['m'] = State::Manual;
 }
 
 
@@ -203,6 +205,14 @@ void HvRobot::run(const double INTERVAL) {
       }
       this->publish_arm();
       this->has_item_ = false;
+      break;
+    
+    case State::Manual  :
+      if(*(this->dt_) >= INTERVAL) {
+        this->save_location(&(this->path_home_));
+        this->publish_path(&(this->path_home_));
+        *(this->dt_) = 0;
+      }
       break;
   
     default :
@@ -338,6 +348,13 @@ void HvRobot::collect_item() {
 void HvRobot::drop_item() {
   this->arm_pos = 10;
   this->publish_arm();
+}
+
+void HvRobot::manual_op() {
+  this->call_follow_srv(0);
+  this->velocity_v = 0;
+  this->velocity_th = 0;
+  this->publish_velocity();
 }
 
 
