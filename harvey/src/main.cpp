@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     delta_time = delta_time + (current_time - last_time);
 
     // run the robot
-    harvey_.run(2.0);
+    harvey_.run(1.0);
 
     bool ret = listener.get();
     if(ret == true) {

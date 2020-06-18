@@ -43,6 +43,8 @@ HvRobot::HvRobot(string name, double * dt) {
   this->current_vel_ = 0;
   this->current_pos_th_ = 0;
   this->has_item_ = false;
+  this->gripper_pos = 0;
+  this->arm_pos = 0;
 
   name.erase(std::remove(name.begin(), name.end(), '-'), name.end());
   replace( name.begin(), name.end(), '.', '_');
@@ -80,6 +82,7 @@ HvRobot::HvRobot(string name, double * dt) {
   tasks[State::TrackBack] = [this]() { track_back(); };
   tasks[State::Collect] = [this]() { collect_item(); };
   tasks[State::ReturnHome] = [this]() { return_home(); };
+  tasks[State::Drop] = [this]() { drop_item(); };
   this->robot_state_manager.load_task_dictionary(tasks);
 
   // map input key codes to states
@@ -89,6 +92,7 @@ HvRobot::HvRobot(string name, double * dt) {
   this->input_codes['r'] = State::ReturnHome;
   this->input_codes['c'] = State::Collect;
   this->input_codes['b'] = State::TrackBack;
+  this->input_codes['d'] = State::Drop;
 }
 
 
@@ -168,13 +172,37 @@ void HvRobot::run(const double INTERVAL) {
         this->publish_path(&(this->path_home_));
         *(this->dt_) = 0;
       }
+      this->gripper_pos = 20.0;
+      this->publish_gripper();
+
+
       break;
     case State::Collect  :
       // save current location
       if(this->has_item_ == true){ 
-        this->call_pick_srv(0);
+        //this->call_pick_srv(0);
         this->robot_state_manager.update_state(State::Hold);
       }
+      break;
+    case State::Hold  :
+      this->velocity_v = 0;
+      this->velocity_th = 0;
+      this->publish_velocity();
+      this->arm_pos = 80;
+      this->gripper_pos = 20;
+      this->publish_gripper();
+      this->publish_arm();
+      break;
+
+    case State::Drop  :
+      this->arm_pos = 10;
+      this->gripper_pos = 90;
+      if(*(this->dt_) >= INTERVAL) {
+        this->publish_gripper();
+        *(this->dt_) = 0;
+      }
+      this->publish_arm();
+      this->has_item_ = false;
       break;
   
     default :
@@ -257,13 +285,16 @@ void HvRobot::follow() {
   this->path_home_.clear();
   this->path_.clear();
   this->call_follow_srv(1);
+  this->gripper_pos = 20.0;
+  this->arm_pos = 90;
+  this->publish_gripper();
 }
 
 void HvRobot::return_home() {
   // return to start point
   ROS_INFO("Robot is returning to home location");
   this->goal_pos_ = this->current_pos_;
-  this->call_follow_srv(0);
+  //this->call_follow_srv(0);
   this->path_home_.pop();
   this->path_home_.shift();
   this->publish_path(&(this->path_home_));
@@ -277,7 +308,7 @@ void HvRobot::track_back() {
   // return to person
   ROS_INFO("Robot is following track back to person");
   this->goal_pos_ = this->current_pos_;
-  this->call_follow_srv(0);
+  //this->call_follow_srv(0);
   this->path_.pop();
   this->publish_path(&(this->path_));
   //this->path_home_.clear();
@@ -289,6 +320,7 @@ void HvRobot::hold() {
   this->velocity_v = 0;
   this->velocity_th = 0;
   this->call_set_pick_target_srv(this->current_pos_.x,this->current_pos_.y);
+  this->call_follow_srv(0);
   //this->goal_pos_ = this->current_pos_;
 }
 
@@ -301,6 +333,11 @@ void HvRobot::collect_item() {
   
   this->call_set_pick_target_srv(x,y);
   this->call_pick_srv(1);
+}
+
+void HvRobot::drop_item() {
+  this->arm_pos = 10;
+  this->publish_arm();
 }
 
 
@@ -357,6 +394,17 @@ void HvRobot::publish_path(Track * loc_path) {
   this->path_pub.publish(msg);
 }
 
+void HvRobot::publish_gripper() {
+  std_msgs::Float32 g_msg;
+  g_msg.data = this->gripper_pos;
+  this->gripper_pub.publish(g_msg);
+}
+
+void HvRobot::publish_arm() {
+  std_msgs::Float32 a_msg;
+  a_msg.data = this->arm_pos;
+  this->arm_pub.publish(a_msg);
+}
 
 // -- Utility functions -- //
 

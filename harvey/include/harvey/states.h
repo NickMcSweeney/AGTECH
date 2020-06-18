@@ -10,6 +10,8 @@ namespace States
     ReturnHome,
     Hold,
     Collect,
+    Manual,
+    Drop,
     Next
   };
 }

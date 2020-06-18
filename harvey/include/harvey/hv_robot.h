@@ -62,6 +62,8 @@ private:
   double current_pos_th_;
   double velocity_v;
   double velocity_th;
+  float gripper_pos;
+  float arm_pos;
 
 public:
   HvRobot(std::string name, double * time);
@@ -79,6 +81,7 @@ private:
   void collect_item();
   void track_back();
   void hold();
+  void drop_item();
   // callback functions for ros subscribers
   void odom_callback(const nav_msgs::Odometry::ConstPtr &msg);
   void ir_callback(const std_msgs::Float32::ConstPtr &msg);
@@ -87,6 +90,8 @@ private:
   void nearest_obj_callback(const geometry_msgs::Vector3 &msg);
   // publish functions
   void publish_velocity();
+  void publish_gripper();
+  void publish_arm();
   void publish_path(Track * loc_path);
   // utility functions
   void call_follow_srv(int input_val);
