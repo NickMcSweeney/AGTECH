@@ -1,6 +1,8 @@
 # AGTECH
 bridging application to connect the harvest vehicle robots with the robotics operating system.
 
+This project includes demo applications to demonstrate the functionality of the robots utilizing the ROS connection.
+
 ### Documentation
 see [wiki](https://gitsvn-nt.oru.se/hkan/harvest-automation/wikis/home) for full documentation.
 
