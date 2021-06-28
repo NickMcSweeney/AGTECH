@@ -1,0 +1,12 @@
+[tool.black]
+line-length = 88
+
+exclude = '''
+/(
+    \.git
+  | harvey
+  | hv_launch
+  | mindprobe_script
+)/
+'''
+

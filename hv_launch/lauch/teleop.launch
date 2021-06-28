@@ -1,0 +1,4 @@
+<launch>
+  <node name="hv_bridge" pkg="hv_bridge" type="main_node.py" args="--all-controllers --hostname hai-1095.local" output="log" required="true"/>
+  <node name="teleop" pkg="hv_teleop" type="teleop_node.py" args="--hostname hai-1095.local" output="screen" respawn="false"/>
+</launch>

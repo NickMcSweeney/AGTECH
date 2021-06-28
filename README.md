@@ -2,7 +2,12 @@
 bridging application to connect the harvest vehicle robots with the robotics operating system.
 
 ### Documentation
-see [wiki](https://github.com/NickMcSweeney/hv-ros-bridge/wiki) for full documentation.
+see [wiki](https://gitsvn-nt.oru.se/hkan/harvest-automation/wikis/home) for full documentation.
+
+#### Project Notes
+This project manages comunication with the Harvest Automation Robots and ROS Melodic. This project has been designed to be run using Ubuntu 18 on a PC or Ubuntu Server 18 on a RaspberryPi 4. No other configurations have been tested, and not other versions of ROS have been tested. 
+
+A preconfigured RaspberryPi disk image (for a 32GB disk) can be downloaded [here](https://cloud.oru.se/s/DJ4sG9yTLsiMZ38), specific instructions for setup can be found in the [Wiki](https://gitsvn-nt.oru.se/hkan/harvest-automation/wikis/setup).
 
 ### Open Source
 this is being developed with Orebro University and is for academic use.
@@ -12,35 +17,45 @@ this is for harvest vehicle robots, property of a private company and therefore 
 
 ### Project Structure
 ```
-*controllers*: nodes to send data to the robots
-	|--- *drive*
-	|--- *gripper_arm*
-*sensors*: nodes to get data from the robots
-	|--- 
-	|---
-*services*: ROS services to control the mindprobe client
-	|---
+*harvey*: demo project written in c++
+	|--- include: header files
+	|--- src: main 
+	|--- srv: service files
+	|--- lib: suplemental classes
+*hv_bridge*: interface between mindprobe and ros
+	|--- libs 
+		|--- Controllers
+			|--- arm: subcribes to arm commands and writes to robot
+			|--- gipper: subcribes to gripper commands and writes to robot
+			|--- drive: subcribes to velocity commands and writes to robot
+		|--- Resources: utility python scripts for the python nodes
+			|--- client: base class for the client application for communicating with the robot
+			|--- config: static variables shared by the hv_bridge classes
+			|--- listener: class for creating a listener thread in the client connection to the robot
+			|--- reader: base class for reading from the robots
+			|--- utils: for functions that are used in multiple classes/files
+			|--- writer: base class for writing to the robots
+		|--- Sensors
+			|--- hub: central connection for all sensor listener classes, handles assigning data to each listener
+			|--- ir: class for the collection, formating, and publishing of IR camera data
+			|--- lidar: class for the collection, formating, and publishing of LIDAR sensor data
+			|--- odometry: class for the collection, formatting, and publishing of positional data
+			|--- gripper: class for the collection, formatting, and publishing of the gripper and gripper arm states
+		|--- Services
+			|--- avoid: toggle the avoid obstacle functionality
+			|--- follow: toggle the follow person functionality
+			|--- pick_target: set a pot location
+	|--- scripts
+		|--- hv_client: extension of the client application for connecting to the hv robot
+		|--- main_node: ros node file
+	|--- srv: ros services
+		|--- mp_set_target: set xy coordinates for a probe 
+		|--- mp_toggle: toggle a boolian value for a probe
+*hv_teleop*: ros teleop node
+	|--- teleop_node: remote control of the gripper using computer keyboard commands
 *hai_launch*: ROS launch files
-	|---
-*tests*: unit tests for the ros nodes
-	|--- *controllers*
-	|--- *sensors*
-	|--- *services*
+	|--- hv_bridge: lauch the bridge
+	|--- harvey: lauch the bridge + the demo application
+	|--- hv_teleop: lauch the bridge + the teleop node
+*mindprobe_scripts*: HAi scripts for mindprobe server and client.
 ```
-
-#### Notes: 
-I'm a little confused about the context of these questions. From the point of view of MindProbe the issue wasn't getting all of the Sick data, it was displaying the data in a useful way. 
-We either displayed a big wedge in front of the robot bounded by the Sick samples or a color coded ray for each sample. The latter was mostly only useful in still frames.
-
-The format of the data should be well documented by Sick. In general, the scan data was in polar coordinates from the center of the Lidar. We got useful information as follows:
-- All transformations are assumed to be 2D with the plane of the Lidar sweep parallel to the ground.
-- The samples are transformed from polar to cartesian coordinates relative to the Lidar device.
-- The time of the start of the scan is either inferred from the arrival time of the data or in the data itself.
-- The rate of sweep is well known so the time that each sample was taken can be inferred.
-- Wheel odometry is used to localize the robot at the time each sample was taken.
-- The samples are finally transformed into "absolute" (field) coordinates given the robot's pose and the Lidar's fixed position relative to the robot's origin.
-
-Scan modes should be well documented by Sick. We only used the one described above.
-
-Data rate was never a big issue. The ethernet connection from the Lidar was adequate. We were also able to transmit the transformed Lidar sample data, including the return intensity to our MindProbe telemetry application over wifi in real time.
-

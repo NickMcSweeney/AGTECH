@@ -76,6 +76,7 @@ generate_messages(
   DEPENDENCIES
   geometry_msgs
   std_msgs
+  nav_msgs
 )
 
 ################################################

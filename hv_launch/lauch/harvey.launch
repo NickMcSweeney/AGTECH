@@ -1,0 +1,4 @@
+<launch>
+  <node name="hv_bridge" pkg="hv_bridge" type="main_node.py" args="--all --hostname hai-1095.local" output="screen" required="true"/>
+  <node name="harvey" pkg="harvey" type="harvey_node" output="screen" required="true"/>
+</launch>
